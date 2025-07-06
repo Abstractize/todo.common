@@ -1,0 +1,49 @@
+name: 📦 Publish Common Library to GitHub Packages
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  publish:
+    name: Pack and Push Common.*
+    runs-on: ubuntu-latest
+
+    permissions:
+      packages: write
+      contents: read
+
+    steps:
+      - name: ⬇️ Checkout code
+        uses: actions/checkout@v4
+
+      - name: 🛠️ Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '9.0.x'
+          source-url: https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json
+
+      - name: 🔐 Authenticate with GitHub Packages
+        run: dotnet nuget add source \
+               --username ${{ github.actor }} \
+               --password ${{ secrets.GITHUB_TOKEN }} \
+               --store-password-in-clear-text \
+               --name github \
+               https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json
+
+      - name: 📦 Pack all ToDoApp.* projects
+        run: |
+          for project in $(find . -name 'ToDoApp.*.csproj'); do
+            echo "📦 Packing $project"
+            dotnet pack "$project" --configuration Release --output ./nupkgs
+          done
+
+      - name: 🚀 Push packages to GitHub Packages
+        run: |
+          for package in ./nupkgs/*.nupkg; do
+            echo "🚀 Pushing $package"
+            dotnet nuget push "$package" \
+              --source github \
+              --api-key ${{ secrets.GITHUB_TOKEN }}
+          done
