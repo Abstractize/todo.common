@@ -7,7 +7,7 @@ on:
 
 jobs:
   publish:
-    name: Pack and Push Common.*
+    name: Pack and Push ToDoApp.*
     runs-on: ubuntu-latest
 
     permissions:
@@ -23,6 +23,8 @@ jobs:
         with:
           dotnet-version: '9.0.x'
           source-url: https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json
+        env:
+            NUGET_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: 🔐 Authenticate with GitHub Packages
         run: dotnet nuget add source \
