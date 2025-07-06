@@ -51,5 +51,7 @@ jobs:
           shopt -s nullglob
           for package in ./nupkgs/*.nupkg; do
             echo "🚀 Pushing $package"
-            dotnet nuget push "$package" --source github --api-key ${{ secrets.GITHUB_TOKEN }}
+            dotnet nuget push "$package" \
+              --source "https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json" \
+              --api-key ${{ secrets.GITHUB_TOKEN }}
           done
