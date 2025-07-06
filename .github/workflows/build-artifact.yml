@@ -24,13 +24,23 @@ jobs:
           dotnet-version: '9.0.x'
           source-url: https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json
         env:
-            NUGET_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NUGET_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: 🔐 Authenticate with GitHub Packages
-        run: dotnet nuget add source https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json --username ${{ github.actor }} --password ${{ secrets.GITHUB_TOKEN }} --store-password-in-clear-text
+        run: |
+          if ! dotnet nuget list source | grep -q "github"; then
+            dotnet nuget add source https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json \
+              --name github \
+              --username ${{ github.actor }} \
+              --password ${{ secrets.GITHUB_TOKEN }} \
+              --store-password-in-clear-text
+          else
+            echo "NuGet source 'github' already exists"
+          fi
 
       - name: 📦 Pack all ToDoApp.* projects
         run: |
+          shopt -s nullglob
           for project in $(find . -name 'ToDoApp.*.csproj'); do
             echo "📦 Packing $project"
             dotnet pack "$project" --configuration Release --output ./nupkgs
@@ -38,9 +48,8 @@ jobs:
 
       - name: 🚀 Push packages to GitHub Packages
         run: |
+          shopt -s nullglob
           for package in ./nupkgs/*.nupkg; do
             echo "🚀 Pushing $package"
-            dotnet nuget push "$package" \
-              --source github \
-              --api-key ${{ secrets.GITHUB_TOKEN }}
+            dotnet nuget push "$package" --source github --api-key ${{ secrets.GITHUB_TOKEN }}
           done
