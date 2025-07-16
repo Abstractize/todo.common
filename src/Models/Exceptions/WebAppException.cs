@@ -7,6 +7,3 @@ public abstract class WebAppException : Exception
     protected WebAppException(string message, int statusCode = 500) : base(message)
         => StatusCode = statusCode;
 }
-
-
-
