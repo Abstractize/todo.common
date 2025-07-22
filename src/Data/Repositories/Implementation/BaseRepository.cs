@@ -11,27 +11,27 @@ public abstract class BaseRepository<TEntity, TDatabaseContext>(TDatabaseContext
 {
     protected readonly TDatabaseContext _context = context;
 
-    public async Task AddAsync(TEntity token)
+    public virtual async Task AddAsync(TEntity token)
     {
         await _context.Set<TEntity>().AddAsync(token);
 
         await _context.SaveChangesAsync();
     }
 
-    public async Task<int> DeleteAsync(Expression<Func<TEntity, bool>> filter)
+    public virtual async Task<int> DeleteAsync(Expression<Func<TEntity, bool>> filter)
     {
         _context.RemoveRange(await _context.Set<TEntity>().Where(filter).ToListAsync());
         return await _context.SaveChangesAsync();
     }
 
-    public async Task<TEntity?> FindAsync(Expression<Func<TEntity, bool>> filter)
+    public virtual async Task<TEntity?> FindAsync(Expression<Func<TEntity, bool>> filter)
     {
         return await _context.Set<TEntity>()
             .AsNoTracking()
             .FirstOrDefaultAsync(filter);
     }
 
-    public async Task<IEnumerable<TEntity>> GetAsync(Expression<Func<TEntity, bool>>? filter = null)
+    public virtual async Task<IEnumerable<TEntity>> GetAsync(Expression<Func<TEntity, bool>>? filter = null)
     {
         IQueryable<TEntity> source = _context.Set<TEntity>().AsNoTracking();
 
@@ -43,7 +43,7 @@ public abstract class BaseRepository<TEntity, TDatabaseContext>(TDatabaseContext
         return await source.ToListAsync();
     }
 
-    public async Task UpdateAsync(TEntity token)
+    public virtual async Task UpdateAsync(TEntity token)
     {
         _context.Set<TEntity>().Update(token);
         await _context.SaveChangesAsync();
