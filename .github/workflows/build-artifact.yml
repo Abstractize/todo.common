@@ -1,7 +1,8 @@
 name: 📦 Publish Common Library to GitHub Packages
 
 on:
-  push:
+  #push:
+  pull_request:
     branches:
       - main
 
@@ -38,10 +39,19 @@ jobs:
             echo "NuGet source 'github' already exists"
           fi
 
-      - name: 📦 Pack all ToDoApp.* projects with dynamic version
+      - name: 🏷️ Generate semantic version from Git tag
+        id: version
         run: |
-          VERSION="1.0.0-ci-$(date +%Y%m%d).${{ github.run_number }}"
+          TAG=$(git describe --tags --abbrev=0)
+          VERSION_BASE=${TAG#v}
+          COUNT=$(git rev-list --count ${TAG}..HEAD)
+          VERSION="$VERSION_BASE.$COUNT"
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
           echo "📦 Using version: $VERSION"
+
+      - name: 📦 Pack all ToDoApp.* projects with calculated version
+        run: |
+          VERSION=${{ steps.version.outputs.version }}
           shopt -s nullglob
           for project in $(find . -name 'ToDoApp.*.csproj'); do
             echo "📦 Packing $project with version $VERSION"
