@@ -1,8 +1,7 @@
 name: 📦 Publish Common Library to GitHub Packages
 
 on:
-  #push:
-  pull_request:
+  push:
     branches:
       - main
 
