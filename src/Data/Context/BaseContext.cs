@@ -4,7 +4,11 @@ using Services.Common.Identity;
 
 namespace Data.Common.Context
 {
-    public abstract class BaseContext(IIdentityService identityService, DbContextOptions<BaseContext> options) : DbContext(options)
+    public abstract class BaseContext<TDatabaseContext>(
+        IIdentityService identityService,
+        DbContextOptions<TDatabaseContext> options
+    ) : DbContext(options)
+    where TDatabaseContext : BaseContext<TDatabaseContext>
     {
         private readonly IIdentityService _identityService = identityService;
 

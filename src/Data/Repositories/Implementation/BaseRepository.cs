@@ -1,4 +1,5 @@
 using System.Linq.Expressions;
+using Data.Common.Context;
 using Data.Common.Repositories.Contracts;
 using Microsoft.EntityFrameworkCore;
 
@@ -7,7 +8,7 @@ namespace Data.Common.Repositories.Implementation;
 public abstract class BaseRepository<TEntity, TDatabaseContext>(TDatabaseContext context) :
     IBaseRepository<TEntity>
     where TEntity : class
-    where TDatabaseContext : DbContext
+    where TDatabaseContext : BaseContext<TDatabaseContext>
 {
     protected readonly TDatabaseContext _context = context;
 
