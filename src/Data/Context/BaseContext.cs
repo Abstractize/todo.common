@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Data.Common.Entity;
 using Services.Common.Identity;
+using System.Linq.Expressions;
 
 namespace Data.Common.Context
 {
@@ -11,6 +12,24 @@ namespace Data.Common.Context
     where TDatabaseContext : BaseContext<TDatabaseContext>
     {
         private readonly IIdentityService _identityService = identityService;
+
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            base.OnModelCreating(modelBuilder);
+
+            foreach (var entityType in modelBuilder.Model.GetEntityTypes())
+            {
+                if (typeof(AuditableEntity).IsAssignableFrom(entityType.ClrType))
+                {
+                    var parameter = Expression.Parameter(entityType.ClrType, "e");
+                    var prop = Expression.PropertyOrField(parameter, nameof(AuditableEntity.DeletedAtUtc));
+                    var condition = Expression.Equal(prop, Expression.Constant(null));
+                    var lambda = Expression.Lambda(condition, parameter);
+
+                    modelBuilder.Entity(entityType.ClrType).HasQueryFilter(lambda);
+                }
+            }
+        }
 
         public override int SaveChanges()
         {
